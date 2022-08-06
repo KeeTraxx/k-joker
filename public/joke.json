@@ -1,0 +1,17 @@
+{
+  "type": "twopart",
+  "lang": "de",
+  "safe": true,
+  "id": 1,
+  "flags": {
+    "nsfw": true,
+    "racist": true,
+    "sexist": true,
+    "religious": true,
+    "political": true,
+    "explicit": true
+  },
+  "category": "Programming",
+  "setup": "setupper",
+  "delivery": "delivvery"
+}

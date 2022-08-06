@@ -1,0 +1,15 @@
+@charset "utf-8";
+
+body {
+    background-color: #ccc;
+}
+
+@import '../node_modules/bulma/bulma.sass';
+/*
+@import '../node_modules/bulmaswatch/cerulean/variables';
+@import '../node_modules/bulmaswatch/cerulean/overrides';
+
+$body-overflow-y: auto;
+$modal-card-body-background-color: $grey-dark;
+*/
+
