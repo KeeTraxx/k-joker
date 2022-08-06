@@ -1,9 +1,5 @@
 @charset "utf-8";
 
-body {
-    background-color: #ccc;
-}
-
 @import '../node_modules/bulma/bulma.sass';
 /*
 @import '../node_modules/bulmaswatch/cerulean/variables';
@@ -13,3 +9,25 @@ $body-overflow-y: auto;
 $modal-card-body-background-color: $grey-dark;
 */
 
+html,
+body {
+  background-color: #ccc;
+  overflow-y: auto;
+  overflow-x: auto;
+}
+
+.joke-container {
+  position: fixed;
+  z-index: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+
+  > div {
+    font-size: 4vh;
+    padding: 0 1.5em 5em 1.5em;
+  }
+}

@@ -1,6 +1,5 @@
 port module KJoker exposing (..)
 
-import Array exposing (set)
 import Browser exposing (Document)
 import Bulma.Bulma
 import Form exposing (Form)
@@ -12,7 +11,6 @@ import Html.Events exposing (onClick)
 import Http
 import Json.Decode exposing (Decoder, andThen, int)
 import Json.Decode.Pipeline exposing (required)
-import Url
 
 
 type JokeContent
@@ -217,20 +215,12 @@ view model =
     , body =
         [ case model.joke of
             Just joke ->
-                div [ class "container is-flex is-flex-direction-column is-align-items-center" ] [ jokeHtml joke ]
+                div [ class "joke-container" ] [ jokeHtml joke ]
 
             Nothing ->
                 text ""
         , button [ class "button", onClick LoadJoke ] [ text "Load Joke" ]
         , button [ class "button", onClick ToggleSettings ] [ text "Show Settings" ]
-        , text
-            (case Form.getOutput model.settings of
-                Just settings ->
-                    settingsToUrl settings
-
-                Nothing ->
-                    ""
-            )
         , div
             [ class "modal"
             , if model.showSettings then
@@ -239,7 +229,7 @@ view model =
               else
                 class ""
             ]
-            [ div [ class "modal-background" ] []
+            [ div [ class "modal-background", onClick ToggleSettings ] []
             , div [ class "modal-card" ]
                 [ header [ class "modal-card-head" ]
                     [ p [ class "modal-card-title" ] [ text "Settings" ]
@@ -282,12 +272,7 @@ settingsView form =
 
 jokeHtml : Joke -> Html Msg
 jokeHtml joke =
-    div [ class "card m-2" ]
-        [ div [ class "card-content" ] [ jokeContentHtml joke.content ]
-        , div [ class "card-footer" ]
-            [ p [ class "card-footer-item" ] [ text <| categoryToString joke.metaData.category ]
-            ]
-        ]
+    jokeContentHtml joke.content
 
 
 jokeContentHtml : JokeContent -> Html Msg
