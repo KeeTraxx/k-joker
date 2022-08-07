@@ -1,1 +1,0 @@
-module.exports = require('./src/netlify/functions/util/util.js')

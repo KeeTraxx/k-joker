@@ -63,8 +63,14 @@ type alias JokeFlag =
     }
 
 
+type MaybeLoading a
+    = Loaded a
+    | NotLoaded
+    | Loading
+
+
 type alias Model =
-    { joke : Maybe Joke
+    { joke : MaybeLoading Joke
     , showSettings : Bool
     , settings : Form () Settings
     }
@@ -114,7 +120,7 @@ type alias SpeechSynthesis =
 
 init : flags -> ( Model, Cmd Msg )
 init _ =
-    ( { joke = Nothing
+    ( { joke = NotLoaded
       , showSettings = False
       , settings =
             Form.initial
@@ -185,7 +191,7 @@ update message model =
             ( model, Cmd.none )
 
         LoadJoke ->
-            ( { model | joke = Nothing }
+            ( { model | joke = Loading }
             , case Form.getOutput model.settings of
                 Just settings ->
                     loadJoke settings
@@ -203,23 +209,25 @@ update message model =
         JokeReceived result ->
             case result of
                 Ok joke ->
-                    ( { model | joke = Just joke }, speechSynthesis <| jokeToSpeechSynthesis joke )
+                    ( { model | joke = Loaded joke }, Cmd.batch (List.reverse (List.map (\s -> speechSynthesis s) (jokeToSpeechSynthesis joke))) )
 
                 Err _ ->
-                    ( model, Cmd.none )
+                    ( { model | joke = Loaded <| Joke (JokeMetaData Misc (JokeFlag False False False False False False) 0 False "en") (TwoPartJoke "I tried to load a joke...." "But it seems it has failed.") }, Cmd.none )
 
 
 view : Model -> Document Msg
 view model =
-    { title = "Jokes"
+    { title = "K-Joker"
     , body =
         [ case model.joke of
-            Just joke ->
+            Loaded joke ->
                 div [ class "joke-container" ] [ jokeHtml joke ]
 
-            Nothing ->
+            NotLoaded ->
+                div [ class "joke-container" ] [ button [ class "button", onClick LoadJoke ] [ text "Load a Joke" ] ]
+
+            Loading ->
                 text ""
-        , button [ class "button", onClick LoadJoke ] [ text "Load Joke" ]
         , button [ class "button", onClick ToggleSettings ] [ text "Show Settings" ]
         , div
             [ class "modal"
@@ -279,12 +287,16 @@ jokeContentHtml : JokeContent -> Html Msg
 jokeContentHtml jokeContent =
     case jokeContent of
         SingleJoke joke ->
-            div [] [ text joke ]
+            div []
+                [ div [] [ text joke ]
+                , button [ class "button", onClick LoadJoke ] [ text "Load another" ]
+                ]
 
         TwoPartJoke setup delivery ->
             div []
                 [ div [] [ text setup ]
                 , div [] [ text delivery ]
+                , button [ class "button", onClick LoadJoke ] [ text "Load another" ]
                 ]
 
 
@@ -306,10 +318,6 @@ main =
 loadJoke : Settings -> Cmd Msg
 loadJoke settings =
     Http.get { url = settingsToUrl settings, expect = Http.expectJson JokeReceived jokeDecoder }
-
-
-
--- Http.get { url = "/joke.json", expect = Http.expectJson JokeReceived jokeDecoder }
 
 
 jokeDecoder : Decoder Joke
@@ -443,14 +451,14 @@ stringToType s =
             Unknown
 
 
-jokeToSpeechSynthesis : Joke -> SpeechSynthesis
+jokeToSpeechSynthesis : Joke -> List SpeechSynthesis
 jokeToSpeechSynthesis joke =
     case joke.content of
         SingleJoke text ->
-            { lang = joke.metaData.lang, text = text }
+            [ { lang = joke.metaData.lang, text = text } ]
 
         TwoPartJoke setup delivery ->
-            { lang = joke.metaData.lang, text = setup ++ " ... " ++ delivery }
+            [ { lang = joke.metaData.lang, text = setup }, { lang = joke.metaData.lang, text = delivery } ]
 
 
 settingsToUrl : Settings -> String
